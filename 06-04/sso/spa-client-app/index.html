@@ -1,0 +1,85 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>SPA Main Page</title>
+  <!-- ①JavaScriptアダプターを読み込む設定 -->
+  <script src="http://localhost:8080/auth/js/keycloak.js"></script>
+  <script>
+    // JavaScriptアダプターの初期化（keycloak.jsonが利用される）
+    var keycloak = new Keycloak();
+
+    function initKeycloak() {
+        // ②未認証時に認証を要求する設定
+        keycloak.init({
+            onLoad: 'login-required',
+            pkceMethod: 'S256'
+        }).then(function(authenticated) {
+            // 認証済なら、IDトークンの username と email を画面に表示する
+            if (authenticated) {
+                document.getElementById("username").innerHTML = keycloak.idTokenParsed.preferred_username;
+                document.getElementById("email").innerHTML = keycloak.idTokenParsed.email;
+            }
+        }).catch(function() {
+            alert('failed to initialize');
+        });
+    }
+
+    function accessResource(method) {
+      // ③API のコール前にトークンの有効期限を確認する設定
+      // このコードでは、トークンの有効期限の30秒前になると、トークンリフレッシュが行われる
+      keycloak.updateToken(30).then(function() {
+        // 実際の API の呼び出し
+        callAPI(method);
+      }).catch(function() {
+        alert('Failed to refresh token');
+      });
+    }
+
+    function callAPI(method) {
+      var url = 'http://localhost:8180/spa-resource-server/getUserPrincipal';
+      // XMLHttpRequestでは、CORSのヘッダーは自動的にセットされる
+      var req = new XMLHttpRequest();
+      req.open(method, url, true);
+      req.setRequestHeader('Accept', 'application/json');
+      // ④アクセストークンをAuthorizationヘッダーにBearerスキームで付与する設定
+      req.setRequestHeader('Authorization', 'Bearer ' + keycloak.token);
+      req.onreadystatechange = function () {
+        if (req.readyState == 4) {
+          if (req.status == 200) {
+            var jsonResponse = JSON.parse(req.response);
+            alert(JSON.stringify(jsonResponse, null, 2));
+          } else if (req.status == 403) {
+            alert('Forbidden!');
+          }
+        }
+      }
+      req.onerror = function () {
+        alert('xhr call error!');
+      }
+      req.send();
+    }
+  </script>
+</head>
+<body onload="initKeycloak()">
+<h1>SPA Main Page</h1>
+username: <label id="username"></label><br>
+email: <label id="email"></label>
+<h3>JavaScript Adapter Function</h3>
+<ul>
+  <li><a href="javascript: alert(keycloak.authenticated);">Display "keycloak.authenticated"</a>
+  <li><a href="javascript: alert(keycloak.subject);">Display "keycloak.subject"</a>
+  <li><a href="javascript: alert(JSON.stringify(keycloak.tokenParsed, null, 2));">Display "keycloak.tokenParsed"</a>
+  <li><a href="javascript: alert(JSON.stringify(keycloak.idTokenParsed, null, 2));">Display "keycloak.idTokenParsed"</a>
+  <li><a href="javascript: alert(JSON.stringify(keycloak.refreshTokenParsed, null, 2));">Display "keycloak.refreshTokenParsed"</a>
+  <li><a href="javascript: keycloak.logout();">Logout(call "keycloak.logout()")</a>
+</ul>
+<h3>Resource Server Access</h3>
+<ul>
+  <li><a href="javascript: accessResource('GET');">Access resource by 'GET' method</a>
+  <li><a href="javascript: accessResource('POST');">Access resource by  'POST' method</a>
+  <li><a href="javascript: accessResource('PUT');">Access resource by 'PUT' method</a>
+  <li><a href="javascript: accessResource('DELETE');">Access resource by 'DELETE' method</a>
+</ul>
+</body>
+</html>
+

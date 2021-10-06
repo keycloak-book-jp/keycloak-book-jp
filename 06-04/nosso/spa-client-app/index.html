@@ -1,0 +1,44 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>SPA Main Page</title>
+  <script>
+    function accessResource(method) {
+      // API の呼び出し
+      callAPI(method);
+    }
+
+    function callAPI(method) {
+      var url = 'http://localhost:8180/spa-resource-server/getUserPrincipal';
+      var req = new XMLHttpRequest();
+      req.open(method, url, true);
+      req.setRequestHeader('Accept', 'application/json');
+      req.onreadystatechange = function () {
+        if (req.readyState == 4) {
+          if (req.status == 200) {
+            var jsonResponse = JSON.parse(req.response);
+            alert(JSON.stringify(jsonResponse, null, 2));
+          } else if (req.status == 403) {
+            alert('Forbidden!');
+          }
+        }
+      }
+      req.onerror = function () {
+        alert('xhr call error!');
+      }
+      req.send();
+    }
+  </script>
+</head>
+<body>
+<h1>SPA Main Page</h1>
+<h3>Resource Server Access</h3>
+<ul>
+  <li><a href="javascript: accessResource('GET');">Access resource by 'GET' method</a>
+  <li><a href="javascript: accessResource('POST');">Access resource by  'POST' method</a>
+  <li><a href="javascript: accessResource('PUT');">Access resource by 'PUT' method</a>
+  <li><a href="javascript: accessResource('DELETE');">Access resource by 'DELETE' method</a>
+</ul>
+</body>
+</html>
+
