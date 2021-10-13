@@ -1,5 +1,6 @@
 package sample.clientapp.service;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -55,14 +56,19 @@ public class ClientAppService {
     public String getAuthorizationUrl(String scope) {
         UriComponentsBuilder authorizationUrl = UriComponentsBuilder.fromUriString(clientConfig.getAuthorizationEndpoint());
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-
-        String redirectUrl = URLEncoder.encode(generateRedirectUri(), Charset.defaultCharset());
+        String charset = Charset.defaultCharset().toString();
+        String redirectUrl = generateRedirectUri();
+        try {
+            redirectUrl = URLEncoder.encode(redirectUrl, charset);
+            scope = URLEncoder.encode(scope, charset);
+        } catch (UnsupportedEncodingException e) {
+        }
         params.add("redirect_uri", redirectUrl);
         params.add("response_type", "code");
         params.add("client_id", clientConfig.getClientId());
 
         if (scope != null && !scope.isEmpty()) {
-            params.add("scope", URLEncoder.encode(scope, Charset.defaultCharset()));
+            params.add("scope", scope);
         }
 
         if (oauthConfig.isState()) {
