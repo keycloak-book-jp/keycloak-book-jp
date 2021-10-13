@@ -33,7 +33,7 @@ public class OutputUserPrincipalServlet extends HttpServlet {
 
     private void outputUserPrincipal(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // キャッシュ無効化
-        response.setHeader("progma","no-cache");
+        response.setHeader("pragma","no-cache");
         response.setHeader("Cache-Control","no-cache");
 
         // CORSアクセスの許可（http://localhostからのGET、POST、PUT、DELETEメソッドを許可）
