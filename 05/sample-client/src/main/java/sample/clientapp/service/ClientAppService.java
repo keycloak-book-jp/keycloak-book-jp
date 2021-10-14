@@ -62,6 +62,7 @@ public class ClientAppService {
             redirectUrl = URLEncoder.encode(redirectUrl, charset);
             scope = URLEncoder.encode(scope, charset);
         } catch (UnsupportedEncodingException e) {
+            // do nothing
         }
         params.add("redirect_uri", redirectUrl);
         params.add("response_type", "code");
@@ -99,14 +100,12 @@ public class ClientAppService {
     }
 
     public TokenResponse requestToken(String authorizationCode) {
-        StringBuilder tokenRequestUrl = new StringBuilder();
-        tokenRequestUrl.append(clientConfig.getTokenEndpoint());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(clientConfig.getClientId(), clientConfig.getClientSecret());
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("code", authorizationCode);
         params.add("grant_type", "authorization_code");
         params.add("redirect_uri", generateRedirectUri());
@@ -116,8 +115,8 @@ public class ClientAppService {
             params.add("code_verifier", clientSession.getCodeVerifier());
         }
 
-        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(tokenRequestUrl.toString()));
-        TokenResponse token = null;
+        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(clientConfig.getTokenEndpoint()));
+        TokenResponse token;
         try {
             printRequest("Token Request", req);
 
@@ -170,20 +169,18 @@ public class ClientAppService {
     }
 
     public TokenResponse refreshToken(RefreshToken refreshToken) {
-        StringBuilder tokenRequestUrl = new StringBuilder();
-        tokenRequestUrl.append(clientConfig.getTokenEndpoint());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(clientConfig.getClientId(), clientConfig.getClientSecret());
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "refresh_token");
         if (refreshToken != null) {
             params.add("refresh_token", refreshToken.getTokenString());
         }
-        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(tokenRequestUrl.toString()));
-        TokenResponse token = null;
+        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(clientConfig.getTokenEndpoint()));
+        TokenResponse token;
         printRequest("Refresh Request", req);
 
         try {
@@ -201,19 +198,17 @@ public class ClientAppService {
     }
 
     public void revokeToken(RefreshToken refreshToken) {
-        StringBuilder revokeUrl = new StringBuilder();
-        revokeUrl.append(clientConfig.getRevokeEndpoint());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(clientConfig.getClientId(), clientConfig.getClientSecret());
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         if (refreshToken != null) {
             params.add("token", refreshToken.getTokenString());
             params.add("token_type_hint", "refresh_token");
         }
-        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(revokeUrl.toString()));
+        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(clientConfig.getRevokeEndpoint()));
 
         printRequest("Revoke Request", req);
 
@@ -235,7 +230,7 @@ public class ClientAppService {
 
         RequestEntity<?> req = new RequestEntity<>(headers, HttpMethod.GET, URI.create(url));
         printRequest("Call API", req);
-        String response = null;
+        String response;
         try {
             ResponseEntity<String> res = restTemplate.exchange(req, String.class);
             response = res.getBody();
@@ -251,30 +246,29 @@ public class ClientAppService {
     }
 
     private String generateRedirectUri() {
-        String redirectUri = ServletUriComponentsBuilder.fromCurrentRequest().replacePath("/gettoken").replaceQuery(null)
+        return ServletUriComponentsBuilder.fromCurrentRequest().replacePath("/gettoken").replaceQuery(null)
                 .toUriString();
-        return redirectUri;
     }
 
-    private void printRequest(String msg, RequestEntity<?> req) {
+    // Info: This print method is used to remove unnecessary information (e.g. type) instead of JsonUtil.marshal(req)
+    private void printRequest(String requestType, RequestEntity<?> req) {
         Map<String, Object> message = new HashMap<>();
-        message.put("method", req.getMethod().toString());
-        message.put("url", req.getUrl().toString());
+        message.put("method", req.getMethod());
+        message.put("url", req.getUrl());
         message.put("headers", req.getHeaders());
         if (req.hasBody()) {
             message.put("body", req.getBody());
         }
-        logger.debug("ReqeustType=\"" + msg + "\" RequestInfo=" + JsonUtil.marshal(message, false));
-        return;
+        logger.debug("RequestType=\"" + requestType + "\" RequestInfo=" + JsonUtil.marshal(message, false));
     }
 
+    // Info: This print method is used to remove unnecessary information (e.g. type) instead of JsonUtil.marshal(resp)
     private void printResponse(String responseType, ResponseEntity<?> resp) {
         Map<String, Object> message = new HashMap<>();
-        message.put("status", resp.getStatusCode().toString());
+        message.put("status", resp.getStatusCode());
         message.put("headers", resp.getHeaders());
         message.put("body", resp.getBody());
         logger.debug("ResponseType=\"" + responseType + "\" ResponseInfo=" + JsonUtil.marshal(message, false));
-        return;
     }
 
     private void printClientError(String errorType, HttpStatusCodeException e) {
@@ -283,7 +277,5 @@ public class ClientAppService {
         message.put("headers", e.getResponseHeaders());
         message.put("body", e.getResponseBodyAsString());
         logger.error("ErrorType=\"" + errorType + "\" ResponseInfo=" + JsonUtil.marshal(message, false));
-
     }
-
 }

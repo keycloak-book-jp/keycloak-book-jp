@@ -6,13 +6,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
         integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-
 </head>
 
 <body>
     <div class="container">
         <a th:href="@{/}">back</a>
-
         <hr />
         <div class="container" th:if="${error != null}">
             <div class="alert alert-danger" role="alert">
@@ -37,7 +35,6 @@
             </div>
         </div>
         <div class="container" th:if="${error == null}">
-
             <p class="h3">Decoded Tokens</p>
             <div class="container">
                 <p class="h4">Access Token</p>
@@ -52,7 +49,6 @@
                 <pre class="border" th:text="${@clientSession?.getIdToken()?.getPayloadJSON()}"></pre>
             </div>
         </div>
-
     </div>
 </body>
 

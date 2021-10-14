@@ -117,10 +117,6 @@ public class ClientAppController {
         }
 
         service.revokeToken(refreshToken);
-
-        // session.setAttribute("accessToken", null);
-        // session.setAttribute("refreshToken", null);
-
         return "forward:/";
     }
 

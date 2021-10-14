@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -44,50 +45,44 @@ public class ResourceServerController {
     @Autowired
     RestTemplate restTemplate;
 
-    private void printRequest(String msg, RequestEntity<?> req) {
+    private void printRequest(String requestType, RequestEntity<?> req) {
         Map<String, Object> message = new HashMap<>();
-        message.put("method", req.getMethod().toString());
-        message.put("url", req.getUrl().toString());
+        message.put("method", req.getMethod());
+        message.put("url", req.getUrl());
         message.put("headers", req.getHeaders());
         if (req.hasBody()) {
             message.put("body", req.getBody());
         }
-        logger.debug("ReqeustType=\"" + msg + "\" RequestInfo=" + writeJsonString(message, false));
-        return;
+        logger.debug("RequestType=\"" + requestType + "\" RequestInfo=" + writeJsonString(message, false));
     }
 
     private void printResponse(String responseType, ResponseEntity<?> resp) {
         Map<String, Object> message = new HashMap<>();
-        message.put("status", resp.getStatusCode().toString());
+        message.put("status", resp.getStatusCode());
         message.put("headers", resp.getHeaders());
         message.put("body", resp.getBody());
         logger.debug("ResponseType=\"" + responseType + "\" ResponseInfo=" + writeJsonString(message, false));
-        return;
     }
 
     private boolean requestTokenIntrospection(String accessToken) {
-        Boolean result = false;
-
-        StringBuilder introspectUrl = new StringBuilder();
-        introspectUrl.append(serverConfig.getAuthserverUrl()).append(serverConfig.getIntrospectionEndpoint());
+        boolean result = false;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.add("Authorization",
                 "Basic " + OauthUtil.encodeToBasicClientCredential(serverConfig.getClientId(), serverConfig.getClientSecret()));
 
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("token", accessToken);
 
-        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(introspectUrl.toString()));
-        IntrospectionResponse response = null;
+        RequestEntity<?> req = new RequestEntity<>(params, headers, HttpMethod.POST, URI.create(serverConfig.getAuthserverUrl() + serverConfig.getIntrospectionEndpoint()));
         printRequest("Introspection Request", req);
 
         try {
             ResponseEntity<IntrospectionResponse> res = restTemplate.exchange(req, IntrospectionResponse.class);
             printResponse("Introspection Response", res);
-            response = res.getBody();
-            result = response.getActive() == "true";
+            IntrospectionResponse resBody = res.getBody();
+            result = resBody != null && Objects.equals(resBody.getActive(), "true");
         } catch (HttpClientErrorException e) {
             logger.error("response code=\"" + e.getStatusCode() + "\" body=" + e.getResponseBodyAsString());
         }

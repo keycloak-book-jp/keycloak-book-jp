@@ -16,8 +16,6 @@ public class Base64url {
         encodedContent = encodedContent.replace('-', '+');
         encodedContent = encodedContent.replace('_', '/');
         switch (encodedContent.length() % 4) {
-            case 0:
-                break;
             case 2:
                 encodedContent += "==";
                 break;
