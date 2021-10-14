@@ -65,8 +65,6 @@ public class OauthUtil {
         encodedContent = encodedContent.replace('-', '+');
         encodedContent = encodedContent.replace('_', '/');
         switch (encodedContent.length() % 4) {
-            case 0:
-                break;
             case 2:
                 encodedContent += "==";
                 break;
