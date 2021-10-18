@@ -17,7 +17,7 @@
     <properties>
         <project.source.version>8</project.source.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.keycloak>12.0.1</version.keycloak>
+        <version.keycloak>15.0.2</version.keycloak>
     </properties>
 
     <dependencyManagement>
