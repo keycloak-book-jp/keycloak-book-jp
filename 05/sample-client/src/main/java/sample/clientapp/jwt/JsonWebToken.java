@@ -13,7 +13,7 @@ import sample.clientapp.util.JsonUtil;
 public class JsonWebToken {
     private String iss;
     private String sub;
-    private String aud;
+    private String[] aud;
 
     private long exp;
     private long nbf;
@@ -122,11 +122,11 @@ public class JsonWebToken {
         this.sub = sub;
     }
 
-    public String getAud() {
+    public String[] getAud() {
         return aud;
     }
 
-    public void setAud(String aud) {
+    public void setAud(String[] aud) {
         this.aud = aud;
     }
 
