@@ -2,14 +2,14 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>SPA Main Page</title>
-  <!-- ①JavaScriptアダプターを読み込む設定 -->
+  <!-- 1. JavaScriptアダプターを読み込む設定 -->
   <script src="http://localhost:8080/auth/js/keycloak.js"></script>
   <script>
     // JavaScriptアダプターの初期化（keycloak.jsonが利用される）
     var keycloak = new Keycloak();
 
     function initKeycloak() {
-        // ②未認証時に認証を要求する設定
+        // 2. 未認証時に認証を要求する設定
         keycloak.init({
             onLoad: 'login-required',
             pkceMethod: 'S256'
@@ -25,7 +25,7 @@
     }
 
     function accessResource(method) {
-      // ③API のコール前にトークンの有効期限を確認する設定
+      // 3. API のコール前にトークンの有効期限を確認する設定
       // このコードでは、トークンの有効期限の30秒前になると、トークンリフレッシュが行われる
       keycloak.updateToken(30).then(function() {
         // 実際の API の呼び出し
@@ -41,7 +41,7 @@
       var req = new XMLHttpRequest();
       req.open(method, url, true);
       req.setRequestHeader('Accept', 'application/json');
-      // ④アクセストークンをAuthorizationヘッダーにBearerスキームで付与する設定
+      // 4. アクセストークンをAuthorizationヘッダーにBearerスキームで付与する設定
       req.setRequestHeader('Authorization', 'Bearer ' + keycloak.token);
       req.onreadystatechange = function () {
         if (req.readyState == 4) {
