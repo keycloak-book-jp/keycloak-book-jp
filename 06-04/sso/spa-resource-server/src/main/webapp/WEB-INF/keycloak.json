@@ -3,9 +3,7 @@
   "resource" : "spa-resource-server",
   "auth-server-url" : "http://localhost:8080/auth",
   "credentials": {
-    "secret": "[クライアントの「Secret」の値]"
+    "secret": "[クライアントシークレット]"
   },
-  "bearer-only" : true,
-  "enable-cors" : true,
-  "cors-allowed-methods" : "POST, GET"
+  "bearer-only" : true
 }
