@@ -1,4 +1,4 @@
-package com.demo.keycloak.authenticator;
+package com.example.keycloak.authenticator;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;

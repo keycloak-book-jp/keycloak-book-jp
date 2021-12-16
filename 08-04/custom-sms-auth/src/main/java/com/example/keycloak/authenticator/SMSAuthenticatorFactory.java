@@ -1,4 +1,4 @@
-package com.demo.keycloak.authenticator;
+package com.example.keycloak.authenticator;
 
 import java.util.List;
 

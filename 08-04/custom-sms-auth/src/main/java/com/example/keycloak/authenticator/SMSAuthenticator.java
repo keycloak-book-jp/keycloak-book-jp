@@ -1,4 +1,4 @@
-package com.demo.keycloak.authenticator;
+package com.example.keycloak.authenticator;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
